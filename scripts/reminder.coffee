@@ -53,7 +53,7 @@ class Reminders
 
     @robot.brain.on 'loaded', =>
       if @robot.brain.data.reminders
-        @cache = @robot.brain.data.reminders
+        #@cache = @robot.brain.data.reminders
         @queue()
 
   add: (reminder) ->
