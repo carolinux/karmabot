@@ -42,7 +42,7 @@ class Reminders
       if @cache.length > 0
         trigger = =>
           reminder = @removeFirst()
-	  new_reminder = new Reminder reminder.msg_envelope reminder.time reminder.action reminder.repeat
+          #new_reminder = new Reminder reminder.msg_envelope reminder.time reminder.action reminder.repeat
           #@add(new_reminder)
           @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action +' with repeat'    
           @queue()
