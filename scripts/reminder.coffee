@@ -43,6 +43,7 @@ class Reminders
         trigger = =>
           reminder = @removeFirst()
           @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action
+	  reminders.add reminder.msg_envelope reminder.time reminder.action reminder.repeat
           @queue()
         # setTimeout uses a 32-bit INT
         extendTimeout = (timeout, callback) ->
@@ -55,7 +56,7 @@ class Reminders
         extendTimeout @cache[0].due - now, trigger
 
 class Reminder
-  constructor: (@msg_envelope, @time, @action) ->
+  constructor: (@msg_envelope, @time, @action, @repeat) ->
     @time.replace(/^\s+|\s+$/g, '')
 
     periods =
@@ -82,6 +83,7 @@ class Reminder
 
     @due = new Date().getTime()
     @due += ((periods.weeks.value * 604800) + (periods.days.value * 86400) + (periods.hours.value * 3600) + (periods.minutes.value * 60) + periods.seconds.value) * 1000
+    @repeat = repeat
 
   dueDate: ->
     dueDate = new Date @due
@@ -94,7 +96,7 @@ module.exports = (robot) ->
   robot.respond /remind me in ((?:(?:\d+) (?:weeks?|days?|hours?|hrs?|minutes?|mins?|seconds?|secs?)[ ,]*(?:and)? +)+)to (.*)/i, (msg) ->
     time = msg.match[1]
     action = msg.match[2]
-    reminder = new Reminder msg.envelope, time, action
+    reminder = new Reminder msg.envelope, time, action, false
     reminders.add reminder
     msg.send 'I\'ll remind you to ' + action + ' on ' + reminder.dueDate()
 
