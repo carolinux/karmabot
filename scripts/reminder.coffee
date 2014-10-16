@@ -76,9 +76,12 @@ class Reminders
       if @cache.length > 0
         trigger = =>
           reminder = @removeFirst()
-          new_reminder = new Reminder reminder.msg_envelope, reminder.time, reminder.action, reminder.repeat
-          @_add new_reminder
-          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action + ' next alert at '+new_reminder.dueDate()
+          next_msg = ''
+          if reminder.repeat is true
+            new_reminder = new Reminder reminder.msg_envelope, reminder.time, reminder.action, reminder.repeat
+            @_add new_reminder
+            next_msg = ' (next alert at '+new_reminder.dueDate()+')'
+          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action + next_msg
           @queue()
         # setTimeout uses a 32-bit INT
         extendTimeout = (timeout, callback) ->
@@ -94,10 +97,11 @@ module.exports = (robot) ->
 
   reminders = new Reminders robot
 
-  robot.respond /remind me in ((?:(?:\d+) (?:weeks?|days?|hours?|hrs?|minutes?|mins?|seconds?|secs?)[ ,]*(?:and)? +)+)to (.*)/i, (msg) ->
-    time = msg.match[1]
-    action = msg.match[2]
-    reminder = new Reminder msg.envelope, time, action, false
+  robot.respond /remind me (in|every) ((?:(?:\d+) (?:weeks?|days?|hours?|hrs?|minutes?|mins?|seconds?|secs?)[ ,]*(?:and)? +)+)to (.*)/i, (msg) ->
+    repeat = msg.match[1] is 'every'
+    time = msg.match[2]
+    action = msg.match[3]
+    reminder = new Reminder msg.envelope, time, action, repeat
     reminders.add reminder
     msg.send 'I\'ll remind you to ' + action + ' on ' + reminder.dueDate()
 
