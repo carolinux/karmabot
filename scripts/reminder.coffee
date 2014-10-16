@@ -77,7 +77,7 @@ class Reminders
           reminder = @removeFirst()
           new_reminder = new Reminder reminder.msg_envelope, reminder.time, reminder.action, reminder.repeat
           @add new_reminder
-          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action + next alert at '+new_reminder.dueDate()
+          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action + ' next alert at '+new_reminder.dueDate()
           @queue()
         # setTimeout uses a 32-bit INT
         extendTimeout = (timeout, callback) ->
