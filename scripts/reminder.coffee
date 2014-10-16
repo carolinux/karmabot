@@ -55,10 +55,11 @@ class Reminders
       if @robot.brain.data.reminders
         #@cache = @robot.brain.data.reminders
         @queue()
-
-  add: (reminder) ->
+  _add: (reminder) ->
     @cache.push reminder
     @cache.sort (a, b) -> a.due - b.due
+  add: (reminder) ->
+    @_add(reminder)
     @robot.brain.data.reminders = @cache
     @queue()
 
