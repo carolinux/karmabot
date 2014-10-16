@@ -13,53 +13,6 @@
 # Author:
 #   whitman
 
-class Reminders
-  constructor: (@robot) ->
-    @cache = []
-    @current_timeout = null
-
-    @robot.brain.on 'loaded', =>
-      if @robot.brain.data.reminders
-        @cache = @robot.brain.data.reminders
-        @queue()
-
-  add: (reminder) ->
-    @cache.push reminder
-    @cache.sort (a, b) -> a.due - b.due
-    @robot.brain.data.reminders = @cache
-    @queue()
-
-  removeFirst: ->
-    reminder = @cache.shift()
-    @robot.brain.data.reminders = @cache
-    return reminder
-
-  queue: ->
-    clearTimeout @current_timeout if @current_timeout
-    if @cache.length > 0
-      now = new Date().getTime()
-      @removeFirst() until @cache.length is 0 or @cache[0].due > now
-      if @cache.length > 0
-        trigger = =>
-          reminder = @removeFirst()
-          #new_reminder = new Reminder reminder.msg_envelope, reminder.time, reminder.action, reminder.repeat
-          #@add new_reminder
-          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action 
-          #+' next alert at '
-	  #+new_reminder.dueDate()          
-          #@robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action
-          #@robot.reply 'I will remind you yet again on '+new_reminder.dueDate()
-          @queue()
-        # setTimeout uses a 32-bit INT
-        extendTimeout = (timeout, callback) ->
-          if timeout > 0x7FFFFFFF
-            @current_timeout = setTimeout ->
-              extendTimeout (timeout - 0x7FFFFFFF), callback
-            , 0x7FFFFFFF
-          else
-            @current_timeout = setTimeout callback, timeout
-        extendTimeout @cache[0].due - now, trigger
-
 class Reminder
   constructor: (@msg_envelope, @time, @action, @repeat) ->
     @time.replace(/^\s+|\s+$/g, '')
@@ -92,6 +45,53 @@ class Reminder
   dueDate: ->
     dueDate = new Date @due
     dueDate.toLocaleString()
+
+class Reminders
+  constructor: (@robot) ->
+    @cache = []
+    @current_timeout = null
+
+    @robot.brain.on 'loaded', =>
+      if @robot.brain.data.reminders
+        @cache = @robot.brain.data.reminders
+        @queue()
+
+  add: (reminder) ->
+    @cache.push reminder
+    @cache.sort (a, b) -> a.due - b.due
+    @robot.brain.data.reminders = @cache
+    @queue()
+
+  removeFirst: ->
+    reminder = @cache.shift()
+    @robot.brain.data.reminders = @cache
+    return reminder
+
+  queue: ->
+    clearTimeout @current_timeout if @current_timeout
+    if @cache.length > 0
+      now = new Date().getTime()
+      @removeFirst() until @cache.length is 0 or @cache[0].due > now
+      if @cache.length > 0
+        trigger = =>
+          reminder = @removeFirst()
+          new_reminder = new Reminder reminder.msg_envelope, reminder.time, reminder.action, reminder.repeat
+          #@add new_reminder
+          @robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action 
+          #+' next alert at '
+	  #+new_reminder.dueDate()          
+          #@robot.reply reminder.msg_envelope, 'you asked me to remind you to ' + reminder.action
+          #@robot.reply 'I will remind you yet again on '+new_reminder.dueDate()
+          @queue()
+        # setTimeout uses a 32-bit INT
+        extendTimeout = (timeout, callback) ->
+          if timeout > 0x7FFFFFFF
+            @current_timeout = setTimeout ->
+              extendTimeout (timeout - 0x7FFFFFFF), callback
+            , 0x7FFFFFFF
+          else
+            @current_timeout = setTimeout callback, timeout
+        extendTimeout @cache[0].due - now, trigger
 
 module.exports = (robot) ->
 
